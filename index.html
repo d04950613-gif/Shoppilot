@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopPilot - My Shop</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+    body { background: #f4f4f4; padding: 16px; }
+    header { background: #2563eb; color: #fff; padding: 16px; border-radius: 8px; margin-bottom: 16px; }
+    h1 { font-size: 22px; }
+    .card { background: #fff; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    input { width: 100%; padding: 10px; margin: 6px 0; border: 1px solid #ddd; border-radius: 6px; }
+    button { background: #2563eb; color: #fff; border: none; padding: 10px 16px; border-radius: 6px; width: 100%; margin-top: 8px; }
+    .product { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+    .delete { background: #dc2626; width: auto; padding: 6px 12px; margin: 0; }
+    h2 { font-size: 16px; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+
+<header><h1>🛒 ShopPilot</h1></header>
+
+<!-- Add Product -->
+  <div class="card">
+    <h2>➕ Add New Product</h2>
+    <input id="pName" placeholder="Product name">
+    <input id="pPrice" type="number" placeholder="Price (Rs)">
+    <input id="pQty" type="number" placeholder="Quantity (stock)">
+    <button onclick="addProduct()">Add Product</button>
+  </div>
+
+<!-- Product List -->
+  <div class="card">
+    <h2>📦 Products</h2>
+    <div id="productList"></div>
+  </div>
+
+<!-- Sales Summary -->
+  <div class="card">
+    <h2>💰 Sales Summary</h2>
+    <p>Total Products: <b id="totalProducts">0</b></p>
+    <p>Total Stock Value: Rs <b id="stockValue">0</b></p>
+  </div>
+
+<script>
+  // Data is saved in the browser's localStorage
+  let products = JSON.parse(localStorage.getItem("shoppilot_products") || "[]");
+
+function save() {
+    localStorage.setItem("shoppilot_products", JSON.stringify(products));
+  }
+
+function addProduct() {
+    const name = document.getElementById("pName").value.trim();
+    const price = Number(document.getElementById("pPrice").value);
+    const qty = Number(document.getElementById("pQty").value);
+
+if (!name || price <= 0 || qty < 0) {
+      alert("Please enter a valid name, price and quantity!");
+      return;
+    }
+
+products.push({ id: Date.now(), name, price, qty });
+    save();
+    document.getElementById("pName").value = "";
+    document.getElementById("pPrice").value = "";
+    document.getElementById("pQty").value = "";
+    render();
+  }
+
+function deleteProduct(id) {
+    products = products.filter(p => p.id !== id);
+    save();
+    render();
+  }
+
+function render() {
+    const list = document.getElementById("productList");
+    if (products.length === 0) {
+      list.innerHTML = "<p>No products yet. Add one above.</p>";
+    } else {
+      list.innerHTML = products.map(p => `
+        <div class="product">
+          <span>${p.name} — Rs ${p.price} × ${p.qty}</span>
+          <button class="delete" onclick="deleteProduct(${p.id})">❌</button>
+        </div>
+      `).join("");
+    }
+    document.getElementById("totalProducts").textContent = products.length;
+    document.getElementById("stockValue").textContent =
+      products.reduce((sum, p) => sum + p.price * p.qty, 0);
+  }
+
+render();
+</script>
+</body>
+  </html>
